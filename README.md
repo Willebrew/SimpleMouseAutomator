@@ -13,6 +13,7 @@ Simple Mouse Automator is a lightweight Python application designed to effortles
 - PyQt5
 - pyautogui
 - pynput
+- Administrative privileges (check your system security settings)
 
 ## Installation
 
