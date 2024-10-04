@@ -62,7 +62,7 @@ class SimpleMouseAutomator(QWidget):
         layout.addWidget(self.record_button)
         layout.addWidget(self.play_button)
 
-        version_label = QLabel('Version 0.1.3', self)
+        version_label = QLabel('Version 0.1.4', self)
         version_label.setAlignment(Qt.AlignCenter)
         version_label.setFont(QFont('Arial', 10))
 
@@ -123,6 +123,7 @@ class SimpleMouseAutomator(QWidget):
     def play_movements(self):
         """Replay recorded mouse movements and clicks."""
         self.mouse_automation.replay_mouse_movements_and_clicks(self.movements)
+        self.play_button.setText("Play")
         print("Playback complete.")
 
     def stop_all(self):
