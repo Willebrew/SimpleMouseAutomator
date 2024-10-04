@@ -1,6 +1,6 @@
 # Simple Mouse Automator
 
-Simple Mouse Automator is a lightweight Python application designed to effortlessly record and replay mouse movements and clicks. Its user-friendly interface makes task automation straightforward and accessible. With a built-in repetition timing randomizer, it breaks predictable patterns, ensuring your automated tasks appear more natural and less robotic.
+Simple Mouse Automator is a lightweight Python application designed to effortlessly record and replay mouse movements and clicks. Its user-friendly interface makes task automation straightforward and accessible. With a built-in repetition timing randomizer, it breaks predictable patterns, ensuring your automated tasks appear more natural and less robotic. I designed this on macOS.
 
 ## Features
 
