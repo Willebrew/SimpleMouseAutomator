@@ -104,7 +104,11 @@ class SimpleMouseAutomator(QWidget):
     def on_play(self):
         """Play back recorded mouse movements."""
         if not self.movements:
-            QMessageBox.warning(self, "No Movements Recorded", "You must record movements before playing them back.")
+            QMessageBox.warning(
+                self,
+                "No Movements Recorded",
+                "You must record movements before playing them back."
+            )
             return
 
         if not self.playback_thread or not self.playback_thread.is_alive():
