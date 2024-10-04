@@ -27,7 +27,7 @@ Simple Mouse Automator is a lightweight Python application designed to effortles
    
 3. Run the application:
    ```bash
-   python mouseAutomatorMain.py
+   python mouse_automator_main.py
    
 ## Usage
 

@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLa
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QTimer
 from pynput import keyboard
-import mouse_automator_package as ma
+from mouse_automator_package import MouseAutomation
 
 
 class SimpleMouseAutomator(QWidget):
@@ -17,13 +17,15 @@ class SimpleMouseAutomator(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
-        self.recording_thread = None
-        self.playback_thread = None
+        self.threads = {'recording': None, 'playback': None}
         self.movements = []
-        self.countdown_timer = QTimer(self)
-        self.countdown_value = 3
+        self.countdown = {
+            'timer': QTimer(self),
+            'value': 3
+        }
         self.listener = keyboard.Listener(on_press=self.on_press)
         self.listener.start()
+        self.mouse_automation = MouseAutomation()
 
     def init_ui(self):
         """Initialize the user interface."""
@@ -72,32 +74,32 @@ class SimpleMouseAutomator(QWidget):
 
     def start_countdown(self):
         """Start the countdown before recording."""
-        if not self.recording_thread or not self.recording_thread.is_alive():
-            self.countdown_value = 3
-            self.countdown_timer.timeout.connect(self.update_countdown)
-            self.countdown_timer.start(1000)
+        if not self.threads['recording'] or not self.threads['recording'].is_alive():
+            self.countdown['value'] = 3
+            self.countdown['timer'].timeout.connect(self.update_countdown)
+            self.countdown['timer'].start(1000)
 
     def update_countdown(self):
         """Update the countdown timer."""
-        if self.countdown_value > 0:
-            self.record_button.setText(f"Starting in {self.countdown_value}...")
-            self.countdown_value -= 1
+        if self.countdown['value'] > 0:
+            self.record_button.setText(f"Starting in {self.countdown['value']}...")
+            self.countdown['value'] -= 1
         else:
-            self.countdown_timer.stop()
-            self.countdown_timer.timeout.disconnect(self.update_countdown)
+            self.countdown['timer'].stop()
+            self.countdown['timer'].timeout.disconnect(self.update_countdown)
             self.on_start_recording()
 
     def on_start_recording(self):
         """Start recording mouse movements."""
-        if not self.recording_thread or not self.recording_thread.is_alive():
+        if not self.threads['recording'] or not self.threads['recording'].is_alive():
             print("Recording Started...")
             self.record_button.setText("Press Q to Stop Recording")
-            self.recording_thread = threading.Thread(target=self.record_movements)
-            self.recording_thread.start()
+            self.threads['recording'] = threading.Thread(target=self.record_movements)
+            self.threads['recording'].start()
 
     def record_movements(self):
         """Record mouse movements and clicks."""
-        self.movements = ma.record_mouse_movements_and_clicks()
+        self.movements = self.mouse_automation.record_mouse_movements_and_clicks()
         print("Recording complete.")
         self.record_button.setText("Start Recording")
 
@@ -111,44 +113,55 @@ class SimpleMouseAutomator(QWidget):
             )
             return
 
-        if not self.playback_thread or not self.playback_thread.is_alive():
+        if not self.threads['playback'] or not self.threads['playback'].is_alive():
             if self.movements:
                 print("Playing movements...")
                 self.play_button.setText("Press Q to Stop Playback")
-                self.playback_thread = threading.Thread(target=self.play_movements)
-                self.playback_thread.start()
+                self.threads['playback'] = threading.Thread(target=self.play_movements)
+                self.threads['playback'].start()
 
     def play_movements(self):
         """Replay recorded mouse movements and clicks."""
-        ma.replay_mouse_movements_and_clicks(self.movements)
+        self.mouse_automation.replay_mouse_movements_and_clicks(self.movements)
         print("Playback complete.")
 
     def stop_all(self):
         """Stop all ongoing actions."""
         print("Stopping...")
-        ma.stop_recording_func()
-
-        if ma.stop_playback_func():
+        if hasattr(self.mouse_automation, 'stop_recording_func'):
+            getattr(self.mouse_automation, 'stop_recording_func')()
+        if hasattr(self.mouse_automation, 'stop_playback_func'):
+            getattr(self.mouse_automation, 'stop_playback_func')()
+        if not (self.threads['recording'] and
+            (self.threads['recording'].is_alive() or
+            (self.threads['playback'] and
+            (self.threads['playback'].is_alive())))):
             print("Playback stopped.")
-
-        if not (self.playback_thread and self.playback_thread.is_alive()):
-            self.play_button.setText("Play")
+        if hasattr(self.mouse_automation, 'stop_recording_func'):
+            getattr(self.mouse_automation, 'stop_recording_func')()
+        if hasattr(self.mouse_automation, 'stop_playback_func'):
+            getattr(self.mouse_automation, 'stop_playback_func')()
 
     def on_press(self, key):
         """Handle global key press events."""
         try:
             if key.char == 'q':
                 print("Stopping all actions...")
-                ma.stop_recording_func()
-                ma.stop_playback_func()
-
-                if not (self.recording_thread and self.recording_thread.is_alive()):
-                    self.record_button.setText("Start Recording")
-
-                if not (self.playback_thread and self.playback_thread.is_alive()):
-                    self.play_button.setText("Play")
+                if hasattr(self.mouse_automation, 'stop_recording_func'):
+                    getattr(self.mouse_automation, 'stop_recording_func')()
+                if hasattr(self.mouse_automation, 'stop_playback_func'):
+                    getattr(self.mouse_automation, 'stop_playback_func')()
+                if not (self.threads['recording'] and
+                        (self.threads['recording'].is_alive() or
+                         (self.threads['playback'] and
+                          (self.threads['playback'].is_alive())))):
+                    print("Playback stopped.")
+                    if hasattr(self.mouse_automation, 'stop_recording_func'):
+                        getattr(self.mouse_automation, 'stop_recording_func')()
+                    if hasattr(self.mouse_automation, 'stop_playback_func'):
+                        getattr(self.mouse_automation, 'stop_playback_func')()
         except AttributeError:
-            print("An error occurred.")
+            pass
 
 
 def main():

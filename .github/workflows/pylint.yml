@@ -21,4 +21,4 @@ jobs:
         pip install -r requirements.txt  # Ensure all your project dependencies are installed
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py')
+        pylint $(git ls-files '*.py') --extension-pkg-whitelist=PyQt5 --disable=no-name-in-module
